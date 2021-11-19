@@ -5,6 +5,7 @@ import re
 nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger')
 
+
 class Extract():
     text = ''
     info = ''
@@ -18,6 +19,7 @@ class Extract():
             self.text = ''
 
         self.getName(self.text, infoDict=info)
+        self.getEmail(self.text, infoDict=info)
 
     def preprocess(self, document):
         lines = nltk.sent_tokenize(document)
@@ -90,6 +92,22 @@ class Extract():
         infoDict['otherNameHits'] = otherNameHits
 
         return name, otherNameHits
+
+    def getEmail(self, inputString, infoDict):
+
+        email = None
+        try:
+            pattern = re.compile(r'\S*@\S*')
+            # Gets all email addresses as a list
+            matches = pattern.findall(inputString)
+            email = matches
+            print(email)
+        except Exception as e:
+            print(e)
+
+        infoDict['email'] = email
+
+        return email
 
 
 if __name__ == "__main__":
