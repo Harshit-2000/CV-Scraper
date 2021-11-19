@@ -23,7 +23,7 @@
         <div class="mb-3">
 
             <h3>Upload Files</h3>
-            <p>It may take a few seconds to get your output. Please patient.</p>
+            <p>It may take a some time to get your output. Please be patient.</p>
             <b>Only PFD files supported.</b> <small>(Hold ctrl to select multiple files)</small>
             <div class="input-group flex-nowrap">
                 <form method="POST" enctype="multipart/form-data" class="input-group flex-nowrap">
@@ -71,8 +71,10 @@
 
     <footer>
         <div class="personal-info">
-            -by <a href="https://www.linkedin.com/in/harshit-singh-2000/">Harshit Singh</a>
-            <a href="https://github.com/Harshit-2000">@Github</a>
+            <a href="https://github.com/Harshit-2000"><img class="icon"
+                    src="{{ url_for('static',filename='github-logo.png') }}" alt="Github"></a>
+            <a href="https://www.linkedin.com/in/harshit-singh-2000/"><img class="icon"
+                    src="{{ url_for('static',filename='linkedin-logo.png') }}" alt="Linkedin"></a>
         </div>
     </footer>
 </body>

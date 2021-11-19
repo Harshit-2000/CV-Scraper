@@ -16,3 +16,12 @@ a{
     text-decoration: none;
     color: white;
 }
+
+.icon{
+    padding: 8px 5px;
+}
+
+.personal-info{
+    text-align: end;
+    padding-right: 12px;
+}
