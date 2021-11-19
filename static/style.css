@@ -1,0 +1,18 @@
+h1{
+    margin: 20px;
+}
+
+footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: rgb(50, 135, 214);
+    color: white;
+    text-align: center;
+}
+
+a{
+    text-decoration: none;
+    color: white;
+}
