@@ -2,6 +2,8 @@ from pdfminer.high_level import extract_text
 import nltk
 import re
 
+nltk.download('punkt')
+
 
 class Extract():
     text = ''
