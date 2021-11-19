@@ -15,68 +15,73 @@
 </head>
 
 <body>
-    <div class="navbar">
-        <h1>Extract Names</h1>
-    </div>
+    <div class="page-container">
+        <div class="content-wrap">
+            <div class="navbar">
+                <h1>Extract Names</h1>
+            </div>
 
-    <div class="container">
-        <div class="mb-3">
+            <div class="container">
+                <div class="mb-3">
 
-            <h3>Upload Files</h3>
-            <p>It may take a some time to get your output. Please be patient.</p>
-            <b>Only PFD files supported.</b> <small>(Hold ctrl to select multiple files)</small>
-            <div class="input-group flex-nowrap">
-                <form method="POST" enctype="multipart/form-data" class="input-group flex-nowrap">
-                    <input type="file" name="file[]" multiple="" class="form-control">
-                    <input type="submit" value="Submit" class="btn btn-primary">
-                </form>
+                    <h3>Upload Files</h3>
+                    <p>It may take a some time to get your output. Please be patient.</p>
+                    <b>Only PFD files supported.</b> <small>(Hold ctrl to select multiple files)</small>
+                    <div class="input-group flex-nowrap">
+                        <form method="POST" enctype="multipart/form-data" class="input-group flex-nowrap">
+                            <input type="file" name="file[]" multiple="" class="form-control">
+                            <input type="submit" value="Submit" class="btn btn-primary">
+                        </form>
+                    </div>
+
+                </div>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">No.</th>
+                            <th scope="col">Filename</th>
+                            <th scope="col">Name of Applicant</th>
+                            <!-- <th scope="col">Other probable names</th> -->
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for f in data %}
+
+                        <tr>
+                            <td scope="row">
+                                {{loop.index}}
+                            </td>
+                            <td>
+                                {{f['filename']}}
+                            </td>
+                            <td>
+                                {{f['name']}}
+                            </td>
+                            <!-- <td>
+                        {{f['otherNameHits']}}
+                    </td> -->
+                        </tr>
+
+                        {% endfor %}
+                    </tbody>
+
+                </table>
             </div>
 
         </div>
 
-        <table class="table">
-            <thead>
-                <tr>
-                    <th scope="col">No.</th>
-                    <th scope="col">Filename</th>
-                    <th scope="col">Name of Applicant</th>
-                    <!-- <th scope="col">Other probable names</th> -->
-                </tr>
-            </thead>
-
-            <tbody>
-                {% for f in data %}
-
-                <tr>
-                    <td scope="row">
-                        {{loop.index}}
-                    </td>
-                    <td>
-                        {{f['filename']}}
-                    </td>
-                    <td>
-                        {{f['name']}}
-                    </td>
-                    <!-- <td>
-                        {{f['otherNameHits']}}
-                    </td> -->
-                </tr>
-
-                {% endfor %}
-            </tbody>
-
-        </table>
+        <footer>
+            <div class="personal-info">
+                <a href="https://github.com/Harshit-2000"><img class="icon"
+                        src="{{ url_for('static',filename='github-logo.png') }}" alt="Github"></a>
+                <a href="https://www.linkedin.com/in/harshit-singh-2000/"><img class="icon"
+                        src="{{ url_for('static',filename='linkedin-logo.png') }}" alt="Linkedin"></a>
+            </div>
+        </footer>
 
     </div>
-
-    <footer>
-        <div class="personal-info">
-            <a href="https://github.com/Harshit-2000"><img class="icon"
-                    src="{{ url_for('static',filename='github-logo.png') }}" alt="Github"></a>
-            <a href="https://www.linkedin.com/in/harshit-singh-2000/"><img class="icon"
-                    src="{{ url_for('static',filename='linkedin-logo.png') }}" alt="Linkedin"></a>
-        </div>
-    </footer>
 </body>
 
 </html>
