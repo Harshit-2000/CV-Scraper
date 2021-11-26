@@ -1,14 +1,21 @@
 from pdfminer.high_level import extract_text
 import nltk
 import re
+import spacy
+import time
 
 nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger')
+nltk.download('words')
 
 
 class Extract():
     text = ''
     info = ''
+
+    lines = []
+    words = []
+    sentences = []
 
     def __init__(self, filepath, info):
         try:
@@ -18,65 +25,97 @@ class Extract():
             print(e)
             self.text = ''
 
+        self.lines, self.sentences, self.words = self.preprocess(self.text)
+
         self.getName(self.text, infoDict=info)
         self.getEmail(self.text, infoDict=info)
+        self.getPhoneNo(self.text, infoDict=info)
+        self.getExperience(self.text, infoDict=info)
+        self.checkKeywords(self.text, infoDict=info)
+        self.cleanText(self.text, infoDict=info)
 
     def preprocess(self, document):
-        lines = nltk.sent_tokenize(document)
+        """
+            Args :
+                document : text extracted from pdf.
+            Returns :
+                lines : List of sentences containing list of words with tags.
+                sentences : A list with words with tags.
+                words : A list sentences containing list words without tags.
+        """
+
+        lines = [el.strip() for el in document.split("\n") if len(el)
+                 > 0]  # Splitting on the basis of newlines
+        # Tokenize the individual lines
         lines = [nltk.word_tokenize(el) for el in lines]
         lines = [nltk.pos_tag(el) for el in lines]
 
-        return lines
+        sentences = nltk.sent_tokenize(document)
+        sentences = [nltk.word_tokenize(el) for el in sentences]
+        words = sentences
+        sentences = [nltk.pos_tag(el) for el in sentences]
+
+        temp = []
+        for word in words:
+            temp += word
+        words = temp
+
+        return lines, sentences, words
 
     def getName(self, inputString, infoDict):
         '''
         Given an input string, returns possible matches for names. Uses regular expression based matching.
         Needs an input string, a dictionary where values are being stored, and an optional parameter for debugging.
-        Modules required: clock from time, code.
         '''
+        # Read newNames files from files
+        newNames = open("data/names/newNames.txt", "r").read().lower()
+        newNames = set(newNames.split())
 
         # Reads Indian Names from the file, reduce all to lower case for easy comparision [Name lists]
-        indianNames = open("data/names.txt", "r").read().lower()
-        # Lookup in a set is much faster
+        indianNames = open("data/names/names.txt", "r").read().lower()
+        # Covert to set as lookup in set is faster.
         indianNames = set(indianNames.split())
+
+        # joining both sets - indianNames + newNames
+
+        indianNames = indianNames | newNames
 
         otherNameHits = []
         nameHits = []
         name = None
 
         try:
-            # tokens, lines, sentences = self.preprocess(inputString)
-            lines = self.preprocess(inputString)
-
-            # Try a regex chunk parser
+            # Regex chunk parser
             grammar = r'NAME: {<NN.*><NN.*>|<NN.*><NN.*><NN.*>}'
-            # grammar = r'NAME: {<NN.*><NN.*><NN.*>*}'
-            # Noun phrase chunk is made out of two or three tags of type NN. (ie NN, NNP etc.) - typical of a name. {2,3} won't work, hence the syntax
-            # Note the correction to the rule. Change has been made later.
+            # Noun phrase chunk is made out of two or three tags of type NN. (ie NN, NNP etc.) - typical of a name.
+
             chunkParser = nltk.RegexpParser(grammar)
             all_chunked_tokens = []
-            for tagged_tokens in lines:
+
+            for tagged_tokens in self.sentences:
                 # Creates a parse tree
                 if len(tagged_tokens) == 0:
                     continue  # Prevent it from printing warnings
                 chunked_tokens = chunkParser.parse(tagged_tokens)
                 all_chunked_tokens.append(chunked_tokens)
+
                 for subtree in chunked_tokens.subtrees():
-                    #  or subtree.label() == 'S' include in if condition if required
                     if subtree.label() == 'NAME':
                         for ind, leaf in enumerate(subtree.leaves()):
                             if leaf[0].lower() in indianNames and 'NN' in leaf[1]:
+
                                 # Case insensitive matching, as indianNames have names in lowercase
                                 # Take only noun-tagged tokens
                                 # Surname is not in the name list, hence if match is achieved add all noun-type tokens
-                                # Pick upto 3 noun entities
+                                # Pick upto 2 noun entities
                                 hit = " ".join(
-                                    [el[0] for el in subtree.leaves()[ind:ind+3]])
+                                    [el[0] for el in subtree.leaves()[ind:ind+2]])
                                 # Check for the presence of commas, colons, digits - usually markers of non-named entities
                                 if re.compile(r'[\d,:]').search(hit):
                                     continue
                                 nameHits.append(hit)
                                 # Need to iterate through rest of the leaves because of possible mis-matches
+
             # Going for the first name hit
             if len(nameHits) > 0:
                 nameHits = [re.sub(r'[^a-zA-Z \-]', '', el).strip()
@@ -97,19 +136,134 @@ class Extract():
 
         email = None
         try:
-            pattern = re.compile(r'\S*@\S*')
-            # Gets all email addresses as a list
+            # pattern = re.compile(r'\S*@\S*')
+            pattern = re.compile(
+                r'[a-zA-Z0-9+._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+')
+
             matches = pattern.findall(inputString)
+            matches = ['[' + match.lower() + ']' for match in matches]
             email = matches
-            print(email)
+
         except Exception as e:
             print(e)
 
         infoDict['email'] = email
-
         return email
+
+    def getPhoneNo(self, inputString, infoDict):
+        """
+        Given an input string return possible matches for phone numbers using regex matching.
+        Needs a inputSting and a dict to store the output.
+        """
+
+        phone = None
+
+        try:
+            pattern = re.compile(
+                r'([+(]?\d+[)\-]?[ \t\r\f\v]*[(]?\d{2,}[()\-]?[ \t\r\f\v]*\d{2,}[()\-]?[ \t\r\f\v]*\d*[ \t\r\f\v]*\d*[ \t\r\f\v]*)')
+            match = pattern.findall(inputString)
+
+            # removing number with less than 10 digits and more than 13
+            match = [re.sub(r'[\D]', '', el)
+                     for el in match if len(re.sub(r'[\D]', '', el)) > 9 and len(re.sub(r'[\D]', '', el)) < 13]
+
+            phone = match
+
+        except Exception as e:
+            print(e)
+
+        infoDict['phoneNo'] = phone
+
+        return phone
+
+    def checkKeywords(self, inputString, infoDict):
+        """
+        Checks for common words in keywords and inputstring.
+        Returns a list of words in both keywords and inputString.
+        """
+
+        found = []
+        try:
+            keywords = open("uploads/keywords.txt", "r").read().lower()
+            keywords = set(keywords.split(','))
+            keywords = [word.lower().strip() for word in keywords]
+
+            inputString = inputString.lower()
+
+            for word in keywords:
+                if word in inputString:
+                    found.append(word)
+
+        except Exception as e:
+            print(e)
+
+        infoDict['foundKeywords'] = found
+        return found
+
+    def getExperience(self, inputString, infoDict):
+        experience = []
+
+        try:
+            pattern = re.compile(r'\S*\s?(years|yrs)')
+
+            for i in range(len(self.words)):
+                if self.words[i].lower() == 'experience':
+                    sen = self.words[i-5: i+6]
+                    sen = " ".join([word.lower() for word in sen])
+                    experience = pattern.search(sen)
+                    if experience:
+                        break
+
+        except Exception as e:
+            print(e)
+
+        if experience:
+            infoDict['experience'] = experience.group()
+        else:
+            infoDict['experience'] = '-'
+
+        return experience
+
+    def cleanText(self, inputString, infoDict, save=True):
+        """
+        Takes in resume text and return cleaned text.
+        """
+
+        cleaned_data = re.sub(
+            r'(\s+)', ' ', inputString)  # remove extra white space
+
+        if save:
+            infoDict['original_text'] = cleaned_data  # saving as original text
+
+        cleaned_data = re.sub(
+            r'(\S*\d{2,}\S*|\S*@\S*|\S+.com\W\S*)', '', cleaned_data)  # remove emails, alphanumerical with more than 2 numbers and urls
+        # remove punctuation
+        cleaned_data = re.sub(r'\s\d+\s', ' ', cleaned_data)  # remove numbers
+        cleaned_data = re.sub("[^0-9A-Za-z ]", "", cleaned_data)
+        # convert into lowercase.
+        cleaned_data = "".join([word.lower() for word in cleaned_data])
+
+        # Removing stopwords and performing lemmatization
+        stopwords = open('data/stopwords/stopwords.txt', mode='r').read()
+        stopwords = set(stopwords.split(','))
+        stopwords = [word.lower().strip() for word in stopwords]
+
+        cleaned_data = nltk.tokenize.word_tokenize(cleaned_data)
+        # wn = nltk.WordNetLemmatizer() # not lemmatizing due to time constrains
+
+        cleaned_data = " ".join(
+            [word for word in cleaned_data if word not in stopwords and len(word) > 1])  # removing words with length 1 and stopwords
+
+        if save:
+            infoDict['cleaned_text'] = cleaned_data
+
+        return cleaned_data
 
 
 if __name__ == "__main__":
     info = {}
+    start = time.time()
     Extract('data/sample.pdf', info)
+    end = time.time()
+    print("Time Elapsed :", end - start)
+    print(info)
