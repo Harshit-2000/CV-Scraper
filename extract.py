@@ -1,7 +1,6 @@
 from pdfminer.high_level import extract_text
 import nltk
 import re
-import spacy
 import time
 
 nltk.download('punkt')
@@ -183,6 +182,8 @@ class Extract():
         """
 
         found = []
+        keywords = ['']
+
         try:
             keywords = open("uploads/keywords.txt", "r").read().lower()
             keywords = set(keywords.split(','))
@@ -198,6 +199,9 @@ class Extract():
             print(e)
 
         infoDict['foundKeywords'] = found
+        infoDict['numberOfMatch'] = len(found)
+        infoDict['percentageMatch'] = round((len(found) / len(keywords)) * 100)
+
         return found
 
     def getExperience(self, inputString, infoDict):

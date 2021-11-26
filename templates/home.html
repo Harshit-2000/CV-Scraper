@@ -51,6 +51,7 @@
                                 <th scope="col">Mobile Number</th>
                                 <th scope="col">Experience</th>
                                 <th scope="col">Matching Keywords</th>
+                                <th scope="col">Match Percentage</th>
                                 <th scope="col">Original Text</th>
                                 <th scope="col">Cleaned Text</th>
                             </tr>
@@ -83,6 +84,9 @@
                                 </td>
                                 <td scope="row">
                                     {{f.foundKeywords}}
+                                </td>
+                                <td scope="row">
+                                    {{ f.percentageMatch }} %
                                 </td>
                                 <td scope="row">
                                     {{f.original_text|truncate(100)}}
