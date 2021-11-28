@@ -5,9 +5,12 @@
 <body>
     <div class="page-container">
         <div class="content-wrap">
-            <div class="navbar">
+            <nav class="navbar">
                 <h1>Home</h1>
-            </div>
+                <div class="nav-item">
+                    <a class="btn btn-primary" href="{{ url_for('uploadKeywords') }}">Upload Keywords File</a>
+                </div>
+            </nav>
 
             <div class="container">
                 <div class="mb-3">
@@ -20,7 +23,14 @@
 
                     <div class="input-group flex-nowrap">
                         <form method="POST" enctype="multipart/form-data" class="input-group flex-nowrap">
-                            <input type="file" name="file[]" multiple="" class="form-control">
+                            <input type="file" name="files[]" multiple="" class="form-control" required>
+
+                            <select class="form-select" name='keyword' aria-label="Default select example" required>
+                                <option value="1">Data Analyst</option>
+                                <option value="2">Backend Developer</option>
+                                <option value="3">Frontend Developer</option>
+                            </select>
+
                             <input type="submit" value="Submit" class="btn btn-primary">
                         </form>
                     </div>
@@ -113,9 +123,6 @@
                             <b> name1 name2 name3 </b>.</small>
                     </p>
                     <hr>
-                    <div class="mb-3">
-                        <a class="btn btn-primary" href="{{ url_for('uploadKeywords') }}">Upload Keywords File</a>
-                    </div>
                 </div>
             </div>
         </div>

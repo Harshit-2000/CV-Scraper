@@ -19,6 +19,10 @@ footer {
     margin-top: 10px;
 }
 
+nav .nav-item{
+    margin-right: 20px;
+}
+
 .content-wrap {
     padding-bottom: 2.5rem;    /* Footer height */
   }

@@ -15,7 +15,7 @@ class Extract():
     words = []
     sentences = []
 
-    def __init__(self, filepath, info):
+    def __init__(self, filepath, info, keywordFile):
 
         try:
             with open(filepath, 'rb') as f:
@@ -31,7 +31,8 @@ class Extract():
         self.getPhoneNo(self.text, infoDict=info)
         self.getExperience(self.text, infoDict=info)
         cleanedText = self.cleanText(self.text, infoDict=info)
-        self.checkKeywords(self.text, cleanedText=cleanedText, infoDict=info)
+        self.checkKeywords(self.text, cleanedText=cleanedText,
+                           infoDict=info, file=keywordFile)
 
     def preprocess(self, document):
         """
@@ -168,7 +169,7 @@ class Extract():
 
         return phone
 
-    def checkKeywords(self, inputString, cleanedText, infoDict):
+    def checkKeywords(self, inputString, cleanedText, infoDict, file):
         """
         Checks for common words in keywords and inputstring.
         Returns a list of words in both keywords and inputString.
@@ -178,14 +179,20 @@ class Extract():
         keywords = ['']
         no_of_match = 0
         try:
-            keywords = open("uploads/keywords.txt", "r").read().lower()
+            if file == '1':
+                keywords = open("uploads/keyword1.txt", "r").read().lower()
+            elif file == '2':
+                keywords = open("uploads/keyword2.txt", "r").read().lower()
+            elif file == '3':
+                keywords = open("uploads/keyword3.txt", "r").read().lower()
+            else:
+                keywords = ''
+
             keywords = set(keywords.split(','))
             keywords = [word.lower().strip() for word in keywords]
 
-            inputString = inputString.lower()
-
             for word in keywords:
-                match = re.findall(word, inputString)
+                match = re.findall(word, cleanedText)
                 no_of_match += len(match)
                 if len(match) > 0:
                     found.append(word)
@@ -267,7 +274,7 @@ class Extract():
 if __name__ == "__main__":
     info = {}
     start = time.time()
-    Extract('data/sample.pdf', info)
+    Extract('data/sample.pdf', info, 'data')
     end = time.time()
     print("Time Elapsed :", end - start)
     print(info)

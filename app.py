@@ -19,7 +19,10 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def upload():
     data = []
     if request.method == "POST":
-        files = request.files.getlist("file[]")
+        keywordFile = request.form.get('keyword')
+
+        files = request.files.getlist("files[]")
+
         for file in files:
             if file.filename == '':
                 continue
@@ -28,7 +31,7 @@ def upload():
             tempdata["filename"] = filename
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
-            Extract(filepath, tempdata)
+            Extract(filepath, tempdata, keywordFile)
             os.unlink('uploads/' + filename)
             data.append(tempdata)
 
@@ -61,17 +64,33 @@ def addName():
 
 @app.route('/uploadKeywords', methods=['GET', 'POST'])
 def uploadKeywords():
-    data = open('uploads/keywords.txt', mode='r').read()
-
+    data = {}
+    data['keyword1'] = open('uploads/keyword1.txt', mode='r').read()
+    data['keyword2'] = open('uploads/keyword2.txt', mode='r').read()
+    data['keyword3'] = open('uploads/keyword3.txt', mode='r').read()
     if request.method == 'POST':
+        keywordFile = request.form.get('keyword')
         file = request.files.get('file')
+
         if file.filename[-3:] != 'txt':
             return Response(json.dumps({'message': 'Only .txt files allowed'}), status=406, mimetype='application/json')
         try:
-            filepath = os.path.join(
-                app.config['UPLOAD_FOLDER'], 'keywords.txt')
+            if keywordFile == '1':
+                filepath = os.path.join(
+                    app.config['UPLOAD_FOLDER'], 'keyword1.txt')
+            elif keywordFile == '2':
+                filepath = os.path.join(
+                    app.config['UPLOAD_FOLDER'], 'keyword2.txt')
+            elif keywordFile == '3':
+                filepath = os.path.join(
+                    app.config['UPLOAD_FOLDER'], 'keyword3.txt')
+
             file.save(filepath)
-            data = open('uploads/keywords.txt', mode='r').read()
+
+            data['keyword1'] = open('uploads/keyword1.txt', mode='r').read()
+            data['keyword2'] = open('uploads/keyword2.txt', mode='r').read()
+            data['keyword3'] = open('uploads/keyword3.txt', mode='r').read()
+
         except Exception as e:
             print(e)
             return Response(json.dumps({'message': 'Error'}), status=500, mimetype='application/json')

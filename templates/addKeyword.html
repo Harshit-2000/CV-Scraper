@@ -25,14 +25,34 @@
         <div class="mb-3">
             <b> Upload a .txt file with comma seperated values.</b>
             <form method="POST" enctype="multipart/form-data" class="input-group flex-nowrap">
-                <input type="file" name="file" class="form-control">
+                <input type="file" name="file" class="form-control" required>
+
+                <select class="form-select" name='keyword' aria-label="Default select example" required>
+                    <option value="1">Data Analyst</option>
+                    <option value="2">Backend Developer</option>
+                    <option value="3">Frontend Developer</option>
+                </select>
+
                 <input type="submit" value="Submit" class="btn btn-primary">
             </form>
         </div>
         <br><br><br>
         <div class="container">
             <h3>Current set of keywords</h3>
-            <p>{{data}}</p>
+            <h5>Keyword Set 1</h5>
+            <p>
+                {{ data.keyword1 }}
+            </p>
+
+            <h5>Keyword Set 2</h5>
+            <p>
+                {{ data.keyword2 }}
+            </p>
+
+            <h5>Keyword Set 3</h5>
+            <p>
+                {{ data.keyword3 }}
+            </p>
         </div>
     </div>
 </body>
