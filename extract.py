@@ -189,7 +189,7 @@ class Extract():
                 keywords = ''
 
             keywords = set(keywords.split(','))
-            keywords = [word.lower().strip() for word in keywords]
+            keywords = [word.lower().strip() for word in keywords if word]
 
             for word in keywords:
                 match = re.findall(word, cleanedText)
@@ -274,7 +274,7 @@ class Extract():
 if __name__ == "__main__":
     info = {}
     start = time.time()
-    Extract('data/sample.pdf', info, 'data')
+    Extract('data/sample.pdf', info, '1')
     end = time.time()
     print("Time Elapsed :", end - start)
     print(info)
