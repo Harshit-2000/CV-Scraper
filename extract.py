@@ -12,11 +12,11 @@ class Extract():
     text = ''
     info = ''
 
-    lines = []
     words = []
     sentences = []
 
     def __init__(self, filepath, info):
+
         try:
             with open(filepath, 'rb') as f:
                 self.text = extract_text(f)
@@ -24,30 +24,23 @@ class Extract():
             print(e)
             self.text = ''
 
-        self.lines, self.sentences, self.words = self.preprocess(self.text)
+        self.sentences, self.words = self.preprocess(self.text)
 
         self.getName(self.text, infoDict=info)
         self.getEmail(self.text, infoDict=info)
         self.getPhoneNo(self.text, infoDict=info)
         self.getExperience(self.text, infoDict=info)
-        self.checkKeywords(self.text, infoDict=info)
-        self.cleanText(self.text, infoDict=info)
+        cleanedText = self.cleanText(self.text, infoDict=info)
+        self.checkKeywords(self.text, cleanedText=cleanedText, infoDict=info)
 
     def preprocess(self, document):
         """
             Args :
                 document : text extracted from pdf.
             Returns :
-                lines : List of sentences containing list of words with tags.
                 sentences : A list with words with tags.
                 words : A list sentences containing list words without tags.
         """
-
-        lines = [el.strip() for el in document.split("\n") if len(el)
-                 > 0]  # Splitting on the basis of newlines
-        # Tokenize the individual lines
-        lines = [nltk.word_tokenize(el) for el in lines]
-        lines = [nltk.pos_tag(el) for el in lines]
 
         sentences = nltk.sent_tokenize(document)
         sentences = [nltk.word_tokenize(el) for el in sentences]
@@ -59,7 +52,7 @@ class Extract():
             temp += word
         words = temp
 
-        return lines, sentences, words
+        return sentences, words
 
     def getName(self, inputString, infoDict):
         '''
@@ -175,7 +168,7 @@ class Extract():
 
         return phone
 
-    def checkKeywords(self, inputString, infoDict):
+    def checkKeywords(self, inputString, cleanedText, infoDict):
         """
         Checks for common words in keywords and inputstring.
         Returns a list of words in both keywords and inputString.
@@ -183,7 +176,7 @@ class Extract():
 
         found = []
         keywords = ['']
-
+        no_of_match = 0
         try:
             keywords = open("uploads/keywords.txt", "r").read().lower()
             keywords = set(keywords.split(','))
@@ -192,15 +185,20 @@ class Extract():
             inputString = inputString.lower()
 
             for word in keywords:
-                if word in inputString:
+                match = re.findall(word, inputString)
+                no_of_match += len(match)
+                if len(match) > 0:
                     found.append(word)
 
         except Exception as e:
             print(e)
 
+        totalWords = [el.strip() for el in cleanedText.split(' ')]
+
         infoDict['foundKeywords'] = found
-        infoDict['numberOfMatch'] = len(found)
-        infoDict['percentageMatch'] = round((len(found) / len(keywords)) * 100)
+        infoDict['numberOfMatch'] = no_of_match
+        infoDict['percentageMatch'] = round(
+            (no_of_match / len(totalWords)) * 100)
 
         return found
 
@@ -240,7 +238,9 @@ class Extract():
             infoDict['original_text'] = cleaned_data  # saving as original text
 
         cleaned_data = re.sub(
-            r'(\S*\d{2,}\S*|\S*@\S*|\S+.com\W\S*)', '', cleaned_data)  # remove emails, alphanumerical with more than 2 numbers and urls
+            r'(\S*\d{2,}\S*|\S*@\S*|\S+.com\W\S*|\w{15,})', '', cleaned_data)
+        # remove emails, alphanumerical with more than 2 numbers ,urls and words with length more than 15.
+
         # remove punctuation
         cleaned_data = re.sub(r'\s\d+\s', ' ', cleaned_data)  # remove numbers
         cleaned_data = re.sub("[^0-9A-Za-z ]", "", cleaned_data)
