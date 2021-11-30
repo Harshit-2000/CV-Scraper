@@ -19,8 +19,6 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def upload():
     data = []
     if request.method == "POST":
-        keywordFile = request.form.get('keyword')
-
         files = request.files.getlist("files[]")
 
         for file in files:
@@ -31,7 +29,8 @@ def upload():
             tempdata["filename"] = filename
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
-            Extract(filepath, tempdata, keywordFile)
+            print(filepath)
+            Extract(filepath, tempdata)
             os.unlink('uploads/' + filename)
             data.append(tempdata)
 
@@ -65,31 +64,21 @@ def addName():
 @app.route('/uploadKeywords', methods=['GET', 'POST'])
 def uploadKeywords():
     data = {}
-    data['keyword1'] = open('uploads/keyword1.txt', mode='r').read()
-    data['keyword2'] = open('uploads/keyword2.txt', mode='r').read()
-    data['keyword3'] = open('uploads/keyword3.txt', mode='r').read()
+    data = readKeywordfile()
+
     if request.method == 'POST':
-        keywordFile = request.form.get('keyword')
+        keyword = request.form.get('keyword')
         file = request.files.get('file')
 
         if file.filename[-3:] != 'txt':
             return Response(json.dumps({'message': 'Only .txt files allowed'}), status=406, mimetype='application/json')
         try:
-            if keywordFile == '1':
-                filepath = os.path.join(
-                    app.config['UPLOAD_FOLDER'], 'keyword1.txt')
-            elif keywordFile == '2':
-                filepath = os.path.join(
-                    app.config['UPLOAD_FOLDER'], 'keyword2.txt')
-            elif keywordFile == '3':
-                filepath = os.path.join(
-                    app.config['UPLOAD_FOLDER'], 'keyword3.txt')
+            filepath = os.path.join(
+                app.config['UPLOAD_FOLDER'], f'keywords/{keyword}.txt')
 
             file.save(filepath)
 
-            data['keyword1'] = open('uploads/keyword1.txt', mode='r').read()
-            data['keyword2'] = open('uploads/keyword2.txt', mode='r').read()
-            data['keyword3'] = open('uploads/keyword3.txt', mode='r').read()
+            data = readKeywordfile()
 
         except Exception as e:
             print(e)
@@ -97,11 +86,6 @@ def uploadKeywords():
 
     return render_template('addKeyword.html', data=data)
     # return Response(data, status=200, mimetype='application/json')
-
-
-@app.route('/convert', methods=['GET', 'POST'])
-def convert():
-    pass
 
 
 @app.route('/downloadCSV')
@@ -112,3 +96,33 @@ def downloadCSV():
         mimetype="text/csv",
         headers={"Content-disposition":
                  "attachment; filename=data.csv"})
+
+
+@app.route('/addstopword', methods=['POST', 'GET'])
+def addStopwords():
+    data = open('data/stopwords/newStopwords.txt', mode='r').read()
+
+    if request.method == 'POST':
+        file = request.files.get('file')
+
+        if file.filename[-3:] != 'txt':
+            return Response(json.dumps({'message': 'Only .txt files allowed'}), status=406, mimetype='application/json')
+
+        file.save('data/stopwords/newStopwords.txt')
+        data = open('data/stopwords/newStopwords.txt', mode='r').read()
+
+    return render_template('uploadStopwords.html', data=data)
+
+
+def readKeywordfile():
+    """
+    read keyword file present in uploads folder.
+    """
+    keywordFolder = os.listdir(os.path.join(
+        app.config['UPLOAD_FOLDER'], 'keywords'))
+    data = {}
+
+    for file in keywordFolder:
+        data[file[:-4]] = open(f'uploads/keywords/{file}', mode='r').read()
+
+    return data

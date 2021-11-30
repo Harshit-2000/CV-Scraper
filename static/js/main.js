@@ -25,4 +25,3 @@ function sendNameForm() {
     nameForm.reset()
     return false;
 }
-

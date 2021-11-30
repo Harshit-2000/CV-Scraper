@@ -29,9 +29,13 @@
 
                 <select class="form-select" name='keyword' aria-label="Default select example" required>
                     <option value="none" selected disabled hidden>Select an option</option>
-                    <option value="1">Data Analyst</option>
-                    <option value="2">Backend Developer</option>
-                    <option value="3">Frontend Developer</option>
+                    <option value="investmentBanking">Investment Banking</option>
+                    <option value="creditResearch">Credit Research</option>
+                    <option value="consulting">Consulting</option>
+                    <option value="MISFPA">MIS/FP&A</option>
+                    <option value="audit">Audit</option>
+                    <option value="accountingTaxation">Accounting/Taxation</option>
+                    <option value="ARAP">AR/AP</option>
                 </select>
 
                 <input type="submit" value="Submit" class="btn btn-primary">
@@ -40,19 +44,35 @@
         <br><br><br>
         <div class="container">
             <h3>Current set of keywords</h3>
-            <h5>Keyword Set 1</h5>
+            <h5>Accounting/Taxation</h5>
             <p>
-                {{ data.keyword1 }}
+                {{ data.accountingTaxation }}
             </p>
 
-            <h5>Keyword Set 2</h5>
+            <h5>AR/AP</h5>
             <p>
-                {{ data.keyword2 }}
+                {{ data.ARAP }}
             </p>
 
-            <h5>Keyword Set 3</h5>
+            <h5>Audit</h5>
             <p>
-                {{ data.keyword3 }}
+                {{ data.audit }}
+            </p>
+            <h5>Consulting</h5>
+            <p>
+                {{ data.consulting }}
+            </p>
+            <h5>Credit Research</h5>
+            <p>
+                {{ data.creditResearch }}
+            </p>
+            <h5>Investment Banking</h5>
+            <p>
+                {{ data.investmentBanking }}
+            </p>
+            <h5>MIS/FP&A</h5>
+            <p>
+                {{ data.MISFPA }}
             </p>
         </div>
     </div>

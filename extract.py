@@ -2,6 +2,10 @@ from pdfminer.high_level import extract_text
 import nltk
 import re
 import time
+import os
+
+import textract
+
 
 nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger')
@@ -15,11 +19,20 @@ class Extract():
     words = []
     sentences = []
 
-    def __init__(self, filepath, info, keywordFile):
+    def __init__(self, filepath, info):
 
         try:
-            with open(filepath, 'rb') as f:
-                self.text = extract_text(f)
+            ext = filepath.split('.')[-1]
+
+            if ext == 'pdf':
+                self.text = extract_text(filepath)
+            elif ext == 'txt':
+                self.text = open(filepath).read()
+            elif ext == 'doc' or ext == 'docx':
+                self.text = textract.process(filepath).decode('utf-8')
+            else:
+                print("Unsupported Format")
+
         except Exception as e:
             print(e)
             self.text = ''
@@ -31,8 +44,20 @@ class Extract():
         self.getPhoneNo(self.text, infoDict=info)
         self.getExperience(self.text, infoDict=info)
         cleanedText = self.cleanText(self.text, infoDict=info)
-        self.checkKeywords(self.text, cleanedText=cleanedText,
-                           infoDict=info, file=keywordFile)
+        self.checkAllKeywords(cleaned_text=cleanedText, infoDict=info)
+
+    def convertToText(self, filepath):
+
+        data = ''
+
+        extension = filepath.split('.')[-1]
+
+        if extension == 'pdf':
+            data = extract_text(filepath)
+        elif extension == 'doc' or extension == 'docx':
+            pass
+
+        return data
 
     def preprocess(self, document):
         """
@@ -179,12 +204,9 @@ class Extract():
         keywords = ['']
         no_of_match = 0
         try:
-            if file == '1':
-                keywords = open("uploads/keyword1.txt", "r").read().lower()
-            elif file == '2':
-                keywords = open("uploads/keyword2.txt", "r").read().lower()
-            elif file == '3':
-                keywords = open("uploads/keyword3.txt", "r").read().lower()
+            if file:
+                keywords = open(
+                    f"uploads/keywords/{file}", "r").read().lower()
             else:
                 keywords = ''
 
@@ -202,12 +224,18 @@ class Extract():
 
         totalWords = [el.strip() for el in cleanedText.split(' ')]
 
-        infoDict['foundKeywords'] = found
-        infoDict['numberOfMatch'] = no_of_match
-        infoDict['percentageMatch'] = round(
+        infoDict[f'keyword{file[:-4]}'] = found
+        infoDict[f'percentage{file[:-4]}'] = round(
             (no_of_match / len(totalWords)) * 100)
 
         return found
+
+    def checkAllKeywords(self, cleaned_text, infoDict):
+        keywordFolder = os.listdir('./uploads/keywords/')
+
+        for file in keywordFolder:
+            self.checkKeywords(
+                self.text, cleanedText=cleaned_text, infoDict=infoDict, file=file)
 
     def getExperience(self, inputString, infoDict):
         experience = []
@@ -257,6 +285,12 @@ class Extract():
         # Removing stopwords and performing lemmatization
         stopwords = open('data/stopwords/stopwords.txt', mode='r').read()
         stopwords = set(stopwords.split(','))
+
+        newStopwords = open('data/stopwords/newStopwords.txt', mode='r').read()
+        newStopwords = set(newStopwords.split(','))
+
+        stopwords = newStopwords | stopwords
+
         stopwords = [word.lower().strip() for word in stopwords]
 
         cleaned_data = nltk.tokenize.word_tokenize(cleaned_data)
@@ -274,7 +308,7 @@ class Extract():
 if __name__ == "__main__":
     info = {}
     start = time.time()
-    Extract('data/sample.pdf', info, '1')
+    Extract('data/sample.pdf', info)
     end = time.time()
     print("Time Elapsed :", end - start)
     print(info)
