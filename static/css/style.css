@@ -64,3 +64,22 @@ a{
 #correct-name{
     margin : 10px 0;
 }
+
+.card-body{
+    position: relative;
+}
+
+#all-btn{
+    display: inline-block;
+    align-self: flex-end;
+    position: absolute;
+    right: 15px;
+}
+
+.card-text{
+    margin: 10px;
+}
+
+.card-title{
+    display: inline-block;
+}

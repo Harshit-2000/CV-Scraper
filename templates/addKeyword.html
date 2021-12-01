@@ -21,22 +21,13 @@
         </a>
     </div>
     <div class=container>
-        <h2>Upload keyword file here.</h2>
+        <h2>Add a new keyword file here.</h2>
         <div class="mb-3">
             <b> Upload a .txt file with comma seperated values.</b>
             <form method="POST" enctype="multipart/form-data" class="input-group flex-nowrap">
                 <input type="file" name="file" class="form-control" required>
-
-                <select class="form-select" name='keyword' aria-label="Default select example" required>
-                    <option value="none" selected disabled hidden>Select an option</option>
-                    <option value="investmentBanking">Investment Banking</option>
-                    <option value="creditResearch">Credit Research</option>
-                    <option value="consulting">Consulting</option>
-                    <option value="MISFPA">MIS/FP&A</option>
-                    <option value="audit">Audit</option>
-                    <option value="accountingTaxation">Accounting/Taxation</option>
-                    <option value="ARAP">AR/AP</option>
-                </select>
+                <input type="text" name="filename" class="form-control" placeholder="Enter name of keywords file."
+                    required>
 
                 <input type="submit" value="Submit" class="btn btn-primary">
             </form>
@@ -44,37 +35,25 @@
         <br><br><br>
         <div class="container">
             <h3>Current set of keywords</h3>
-            <h5>Accounting/Taxation</h5>
-            <p>
-                {{ data.accountingTaxation }}
-            </p>
 
-            <h5>AR/AP</h5>
-            <p>
-                {{ data.ARAP }}
-            </p>
+            {% for file in files %}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{file.name}}</h5>
+                    <div id="all-btn">
+                        <a id="delete-btn" href="{{ url_for('deleteKeywords', id = file.id) }}"
+                            class="btn btn-danger">Delete</a>
+                    </div>
+                    <p class="card-text">
+                        {{file.file.decode('utf-8')}}
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
 
-            <h5>Audit</h5>
-            <p>
-                {{ data.audit }}
-            </p>
-            <h5>Consulting</h5>
-            <p>
-                {{ data.consulting }}
-            </p>
-            <h5>Credit Research</h5>
-            <p>
-                {{ data.creditResearch }}
-            </p>
-            <h5>Investment Banking</h5>
-            <p>
-                {{ data.investmentBanking }}
-            </p>
-            <h5>MIS/FP&A</h5>
-            <p>
-                {{ data.MISFPA }}
-            </p>
         </div>
+
+    </div>
     </div>
 </body>
 

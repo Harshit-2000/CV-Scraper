@@ -2,10 +2,10 @@ from flask import Flask, render_template, request, jsonify
 from flask.helpers import url_for
 from werkzeug.utils import redirect, secure_filename
 from werkzeug.wrappers.response import Response
-from extract import Extract
 import os
 import json
 import csv
+from flask_sqlalchemy import SQLAlchemy
 
 
 UPLOAD_FOLDER = os.path.dirname(
@@ -13,7 +13,23 @@ UPLOAD_FOLDER = os.path.dirname(
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///keywords.db'
 
+db = SQLAlchemy(app)
+
+## MODELS ##
+
+class KeywordFile(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+    file = db.Column(db.LargeBinary(), nullable=False)
+
+    def __repr__(self) -> str:
+        return self.name
+
+
+## VIEWS ##
+from extract import Extract
 
 @app.route("/", methods=["POST", "GET"])
 def upload():
@@ -45,7 +61,7 @@ def upload():
         print(e)
 
     # return jsonify(data)
-    return render_template('home.html', data=data)
+    return render_template('home.html', data=data, files=KeywordFile.query.all())
 
 
 @app.route('/addname', methods=["POST", "GET"])
@@ -63,29 +79,38 @@ def addName():
 
 @app.route('/uploadKeywords', methods=['GET', 'POST'])
 def uploadKeywords():
-    data = {}
-    data = readKeywordfile()
-
+    
     if request.method == 'POST':
         keyword = request.form.get('keyword')
+        filename = request.form.get('filename')
         file = request.files.get('file')
 
         if file.filename[-3:] != 'txt':
             return Response(json.dumps({'message': 'Only .txt files allowed'}), status=406, mimetype='application/json')
         try:
-            filepath = os.path.join(
-                app.config['UPLOAD_FOLDER'], f'keywords/{keyword}.txt')
 
-            file.save(filepath)
-
-            data = readKeywordfile()
+            keyword = KeywordFile(name=filename, file=file.read())
+            db.session.add(keyword)
+            db.session.commit()
 
         except Exception as e:
             print(e)
             return Response(json.dumps({'message': 'Error'}), status=500, mimetype='application/json')
 
-    return render_template('addKeyword.html', data=data)
+    return render_template('addKeyword.html', files=KeywordFile.query.all())
     # return Response(data, status=200, mimetype='application/json')
+
+
+@app.route('/deleteKeywords/<int:id>')
+def deleteKeywords(id):
+    try:
+        file = KeywordFile.query.get(id)
+        db.session.delete(file)
+        db.session.commit()
+        return redirect(url_for('uploadKeywords'))
+    except Exception as e:
+        print(e)
+        return Response(json.dumps({'message': 'error'}), status=500, mimetype='application/json')
 
 
 @app.route('/downloadCSV')
@@ -114,15 +139,3 @@ def addStopwords():
     return render_template('uploadStopwords.html', data=data)
 
 
-def readKeywordfile():
-    """
-    read keyword file present in uploads folder.
-    """
-    keywordFolder = os.listdir(os.path.join(
-        app.config['UPLOAD_FOLDER'], 'keywords'))
-    data = {}
-
-    for file in keywordFolder:
-        data[file[:-4]] = open(f'uploads/keywords/{file}', mode='r').read()
-
-    return data

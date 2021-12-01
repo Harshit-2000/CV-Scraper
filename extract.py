@@ -6,6 +6,7 @@ import os
 
 import textract
 
+from app import KeywordFile
 
 nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger')
@@ -44,20 +45,7 @@ class Extract():
         self.getPhoneNo(self.text, infoDict=info)
         self.getExperience(self.text, infoDict=info)
         cleanedText = self.cleanText(self.text, infoDict=info)
-        self.checkAllKeywords(cleaned_text=cleanedText, infoDict=info)
-
-    def convertToText(self, filepath):
-
-        data = ''
-
-        extension = filepath.split('.')[-1]
-
-        if extension == 'pdf':
-            data = extract_text(filepath)
-        elif extension == 'doc' or extension == 'docx':
-            pass
-
-        return data
+        self.checkAllKeywords(cleanedText=cleanedText, infoDict=info)
 
     def preprocess(self, document):
         """
@@ -194,7 +182,7 @@ class Extract():
 
         return phone
 
-    def checkKeywords(self, inputString, cleanedText, infoDict, file):
+    def checkKeywords(self, totalWords, cleanedText, infoDict, file):
         """
         Checks for common words in keywords and inputstring.
         Returns a list of words in both keywords and inputString.
@@ -205,8 +193,7 @@ class Extract():
         no_of_match = 0
         try:
             if file:
-                keywords = open(
-                    f"uploads/keywords/{file}", "r").read().lower()
+                keywords = file.file.decode('utf-8')
             else:
                 keywords = ''
 
@@ -222,20 +209,20 @@ class Extract():
         except Exception as e:
             print(e)
 
-        totalWords = [el.strip() for el in cleanedText.split(' ')]
-
-        infoDict[f'keyword{file[:-4]}'] = found
-        infoDict[f'percentage{file[:-4]}'] = round(
+        infoDict[f'keyword{file.name}'] = found
+        infoDict[f'percentage{file.name}'] = round(
             (no_of_match / len(totalWords)) * 100)
 
         return found
 
-    def checkAllKeywords(self, cleaned_text, infoDict):
-        keywordFolder = os.listdir('./uploads/keywords/')
+    def checkAllKeywords(self, cleanedText, infoDict):
+        allFiles = KeywordFile.query.all()
 
-        for file in keywordFolder:
+        totalWords = [el.strip() for el in cleanedText.split(' ')]
+
+        for file in allFiles:
             self.checkKeywords(
-                self.text, cleanedText=cleaned_text, infoDict=infoDict, file=file)
+                totalWords=totalWords, cleanedText=cleanedText, infoDict=infoDict, file=file)
 
     def getExperience(self, inputString, infoDict):
         experience = []

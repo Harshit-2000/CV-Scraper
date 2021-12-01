@@ -1,1 +1,0 @@
-react, js, javascript, css, html, bootstrap, canva, jquery, sass, tailwind, angular, typescript
