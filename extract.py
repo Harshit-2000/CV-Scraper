@@ -44,16 +44,16 @@ class Extract():
         self.getEmail(self.text, infoDict=info)
         self.getPhoneNo(self.text, infoDict=info)
         self.getExperience(self.text, infoDict=info)
-        cleanedText = self.cleanText(self.text, infoDict=info)
-        self.checkAllKeywords(cleanedText=cleanedText, infoDict=info)
+        cleanedText, orignalText = self.cleanText(self.text, infoDict=info)
+        self.checkAllKeywords(cleanedText=cleanedText,orignalText=orignalText ,infoDict=info)
 
     def preprocess(self, document):
         """
             Args :
                 document : text extracted from pdf.
             Returns :
-                sentences : A list with words with tags.
-                words : A list sentences containing list words without tags.
+                sentences : A list of words with tags.
+                words : A list of sentences containing list of words without tags.
         """
 
         sentences = nltk.sent_tokenize(document)
@@ -182,7 +182,7 @@ class Extract():
 
         return phone
 
-    def checkKeywords(self, totalWords, cleanedText, infoDict, file):
+    def checkKeywords(self, totalCleanedWords, totalOrignalWords, cleanedText, infoDict, file):
         """
         Checks for common words in keywords and inputstring.
         Returns a list of words in both keywords and inputString.
@@ -210,19 +210,23 @@ class Extract():
             print(e)
 
         infoDict[f'keyword{file.name}'] = found
-        infoDict[f'percentage{file.name}'] = round(
-            (no_of_match / len(totalWords)) * 100)
+        infoDict[f'matchCount{file.name}'] = len(found)
+        infoDict[f'percentageOrignal{file.name}'] = round(
+            (no_of_match / len(totalOrignalWords)) * 100)
+        infoDict[f'percentageCleaned{file.name}'] = round(
+            (no_of_match / len(totalCleanedWords)) * 100)
 
         return found
 
-    def checkAllKeywords(self, cleanedText, infoDict):
+    def checkAllKeywords(self, cleanedText, orignalText, infoDict):
         allFiles = KeywordFile.query.all()
 
-        totalWords = [el.strip() for el in cleanedText.split(' ')]
+        totalCleanedWords = [el.strip() for el in cleanedText.split(' ')]
+        totalOrignalWords = [el.strip() for el in orignalText.split(' ')]
 
         for file in allFiles:
-            self.checkKeywords(
-                totalWords=totalWords, cleanedText=cleanedText, infoDict=infoDict, file=file)
+            self.checkKeywords(totalCleanedWords=totalCleanedWords, totalOrignalWords=totalOrignalWords,
+                               cleanedText=cleanedText, infoDict=infoDict, file=file)
 
     def getExperience(self, inputString, infoDict):
         experience = []
@@ -256,6 +260,7 @@ class Extract():
         cleaned_data = re.sub(
             r'(\s+)', ' ', inputString)  # remove extra white space
 
+        orignalText = cleaned_data
         if save:
             infoDict['original_text'] = cleaned_data  # saving as original text
 
@@ -289,7 +294,7 @@ class Extract():
         if save:
             infoDict['cleaned_text'] = cleaned_data
 
-        return cleaned_data
+        return cleaned_data, orignalText
 
 
 if __name__ == "__main__":

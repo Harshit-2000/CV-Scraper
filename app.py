@@ -19,6 +19,7 @@ db = SQLAlchemy(app)
 
 ## MODELS ##
 
+
 class KeywordFile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
@@ -30,6 +31,7 @@ class KeywordFile(db.Model):
 
 ## VIEWS ##
 from extract import Extract
+
 
 @app.route("/", methods=["POST", "GET"])
 def upload():
@@ -45,17 +47,17 @@ def upload():
             tempdata["filename"] = filename
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
-            print(filepath)
+
             Extract(filepath, tempdata)
             os.unlink('uploads/' + filename)
             data.append(tempdata)
 
     try:
         field_names = data[0].keys()
-        with open('data/data.csv', mode='w', encoding="utf-8") as csvfile:
-            csvfile.truncate(0)
+        with open('data/data.csv', mode='a', encoding="utf-8") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=field_names)
-            writer.writeheader()
+            if not os.stat('data/data.csv').st_size > 0:
+                writer.writeheader()
             writer.writerows(data)
     except Exception as e:
         print(e)
@@ -79,7 +81,7 @@ def addName():
 
 @app.route('/uploadKeywords', methods=['GET', 'POST'])
 def uploadKeywords():
-    
+
     if request.method == 'POST':
         keyword = request.form.get('keyword')
         filename = request.form.get('filename')
@@ -123,6 +125,17 @@ def downloadCSV():
                  "attachment; filename=data.csv"})
 
 
+@app.route('/clearCSV')
+def clearCSV():
+    try:
+        with open('data/data.csv', mode='w', encoding="utf-8") as csvfile:
+            csvfile.truncate(0)
+        return redirect(url_for('upload'))
+    except Exception as e:
+        print(e)
+        return Response(json.dumps({'message': 'error'}), status=500, mimetype='application/json')
+
+
 @app.route('/addstopword', methods=['POST', 'GET'])
 def addStopwords():
     data = open('data/stopwords/newStopwords.txt', mode='r').read()
@@ -137,5 +150,3 @@ def addStopwords():
         data = open('data/stopwords/newStopwords.txt', mode='r').read()
 
     return render_template('uploadStopwords.html', data=data)
-
-

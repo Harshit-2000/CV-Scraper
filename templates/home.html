@@ -9,6 +9,10 @@
                 <h1>Home</h1>
                 <ul class='nav'>
                     <li class="nav-item">
+                        <a class="btn btn-danger" href="{{ url_for('clearCSV') }}" data-bs-toggle="tooltip"
+                            data-bs-placement="left" title="Clears current CSV files">Clear Session</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="btn btn-primary" href="{{ url_for('uploadKeywords') }}">Upload Keywords File</a>
                     </li>
                     <li class="nav-item">
@@ -101,7 +105,7 @@
                                 </td>
 
                                 {% for file in files %}
-                                <td scope="row">{{f['percentage' + file.name]}}%</td>
+                                <td scope="row">{{f['percentageCleaned' + file.name]}}%</td>
                                 {% endfor %}
 
                             </tr>
