@@ -24,15 +24,21 @@
         <h2>Add a new keyword file here.</h2>
         <div class="mb-3">
             <b> Upload a .txt file with comma seperated values.</b>
-            <form method="POST" enctype="multipart/form-data" class="input-group flex-nowrap">
-                <input type="file" name="file" class="form-control" required>
-                <input type="text" name="filename" class="form-control" placeholder="Enter name of keywords file."
-                    required>
-
+            <form method="POST" enctype="multipart/form-data">
+                <div class="margin-5">
+                    <label for="pFile"> <b> Primary Keyword File (required) </b> </label>
+                    <input type="file" name="pFile" class="form-control" required>
+                </div>
+                <div class="margin-5">
+                    <label for="sFile"> <b> Secondary Keyword File </b> </label>
+                    <input type="file" name="sFile" class="form-control">
+                </div>
+                <input type="text" name="filename" class="margin-5 form-control"
+                    placeholder="Enter name of keywords file." required>
                 <input type="submit" value="Submit" class="btn btn-primary">
             </form>
         </div>
-        <br><br><br>
+        <br><br>
         <div class="container">
             <h3>Current set of keywords</h3>
 
@@ -44,8 +50,14 @@
                         <a id="delete-btn" href="{{ url_for('deleteKeywords', id = file.id) }}"
                             class="btn btn-danger">Delete</a>
                     </div>
+                    <br>
+                    <b>Primary Keywords</b>
                     <p class="card-text">
-                        {{file.file.decode('utf-8')}}
+                        {{file.primaryfile.decode('utf-8')}}
+                    </p>
+                    <b>Secondary Secondary</b>
+                    <p class="card-text">
+                        {{file.secondaryfile.decode('utf-8')}}
                     </p>
                 </div>
             </div>

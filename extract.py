@@ -45,7 +45,8 @@ class Extract():
         self.getPhoneNo(self.text, infoDict=info)
         self.getExperience(self.text, infoDict=info)
         cleanedText, orignalText = self.cleanText(self.text, infoDict=info)
-        self.checkAllKeywords(cleanedText=cleanedText,orignalText=orignalText ,infoDict=info)
+        self.checkAllKeywords(cleanedText=cleanedText,
+                              orignalText=orignalText, infoDict=info)
 
     def preprocess(self, document):
         """
@@ -185,32 +186,53 @@ class Extract():
     def checkKeywords(self, totalCleanedWords, totalOrignalWords, cleanedText, infoDict, file):
         """
         Checks for common words in keywords and inputstring.
+        Calculates scores, matchpercentage, words matched.
         Returns a list of words in both keywords and inputString.
         """
 
         found = []
-        keywords = ['']
+        primarykeywords = ['']
+        secondarykeywords = ['']
         no_of_match = 0
+        score = 0
+
         try:
             if file:
-                keywords = file.file.decode('utf-8')
+                primarykeywords = file.primaryfile.decode('utf-8')
+                secondarykeywords = file.secondaryfile.decode('utf-8')
             else:
-                keywords = ''
+                primarykeywords = ''
+                secondarykeywords = ''
 
-            keywords = set(keywords.split(','))
-            keywords = [word.lower().strip() for word in keywords if word]
+            primarykeywords = set(primarykeywords.split(','))
+            primarykeywords = [word.lower().strip()
+                               for word in primarykeywords if word]
 
-            for word in keywords:
+            secondarykeywords = set(secondarykeywords.split(','))
+            secondarykeywords = [word.lower().strip()
+                                 for word in secondarykeywords if word]
+
+            for word in primarykeywords:
                 match = re.findall(word, cleanedText)
                 no_of_match += len(match)
+                score += 2 * len(match)
+                if len(match) > 0:
+                    found.append(word)
+
+            for word in secondarykeywords:
+                match = re.findall(word, cleanedText)
+                no_of_match += len(match)
+                score += len(match)
                 if len(match) > 0:
                     found.append(word)
 
         except Exception as e:
+            print("Error occured!")
             print(e)
 
         infoDict[f'keyword{file.name}'] = found
         infoDict[f'matchCount{file.name}'] = len(found)
+        infoDict[f'score{file.name}'] = score
         infoDict[f'percentageOrignal{file.name}'] = round(
             (no_of_match / len(totalOrignalWords)) * 100)
         infoDict[f'percentageCleaned{file.name}'] = round(

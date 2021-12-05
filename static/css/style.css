@@ -83,3 +83,7 @@ a{
 .card-title{
     display: inline-block;
 }
+
+.margin-5{
+    margin: 2% 0;
+}

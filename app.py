@@ -23,7 +23,8 @@ db = SQLAlchemy(app)
 class KeywordFile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
-    file = db.Column(db.LargeBinary(), nullable=False)
+    primaryfile = db.Column(db.LargeBinary(), nullable=False)
+    secondaryfile = db.Column(db.LargeBinary())
 
     def __repr__(self) -> str:
         return self.name
@@ -43,8 +44,8 @@ def upload():
             if file.filename == '':
                 continue
             tempdata = {}
+            tempdata["filename"] = file.filename
             filename = secure_filename(file.filename)
-            tempdata["filename"] = filename
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
 
@@ -83,15 +84,22 @@ def addName():
 def uploadKeywords():
 
     if request.method == 'POST':
-        keyword = request.form.get('keyword')
-        filename = request.form.get('filename')
-        file = request.files.get('file')
 
-        if file.filename[-3:] != 'txt':
+        filename = request.form.get('filename')
+        pFile = request.files.get('pFile')
+        sFile = request.files.get('sFile')
+
+        if not sFile:
+            sFile = open('uploads/keywords.txt', mode='rb')
+            secondaryExe = 'txt'
+        else:
+            secondaryExe = sFile.filename[-3:]
+
+        if pFile.filename[-3:] != 'txt' or secondaryExe != 'txt':
             return Response(json.dumps({'message': 'Only .txt files allowed'}), status=406, mimetype='application/json')
         try:
-
-            keyword = KeywordFile(name=filename, file=file.read())
+            keyword = KeywordFile(
+                name=filename, primaryfile=pFile.read(), secondaryfile=sFile.read())
             db.session.add(keyword)
             db.session.commit()
 

@@ -67,6 +67,7 @@
 
                                 {% for file in files %}
                                 <th scope="col">{{ file.name }} percentage</th>
+                                <th scope="col">{{ file.name }} score</th>
                                 {% endfor %}
                             </tr>
                         </thead>
@@ -106,6 +107,7 @@
 
                                 {% for file in files %}
                                 <td scope="row">{{f['percentageCleaned' + file.name]}}%</td>
+                                <td scope="row">{{f['score' + file.name]}}</td>
                                 {% endfor %}
 
                             </tr>
