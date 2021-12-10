@@ -6,7 +6,7 @@ import os
 
 import textract
 
-from app import KeywordFile
+from app import Keyword, KeywordFile
 
 nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger')
@@ -241,7 +241,7 @@ class Extract():
         return found
 
     def checkAllKeywords(self, cleanedText, orignalText, infoDict):
-        allFiles = KeywordFile.query.all()
+        allFiles = Keyword.query.filter_by(is_active = True).first().file
 
         totalCleanedWords = [el.strip() for el in cleanedText.split(' ')]
         totalOrignalWords = [el.strip() for el in orignalText.split(' ')]

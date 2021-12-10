@@ -15,15 +15,12 @@
 </head>
 
 <body>
-    <div class='navbar'>
-        <a href="{{ url_for('upload') }}">
-            <h1>Home</h1>
-        </a>
-    </div>
+    {% include 'navbar.html' %}
     <div class=container>
         <h2>Add a new keyword file here.</h2>
         <div class="mb-3">
             <b> Upload a .txt file with comma seperated values.</b>
+            <br>
             <form method="POST" enctype="multipart/form-data">
                 <div class="margin-5">
                     <label for="pFile"> <b> Primary Keyword File (required) </b> </label>
@@ -45,7 +42,9 @@
             {% for file in files %}
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">{{file.name}}</h5>
+                    <h4 class="card-title">{{ file.keyword.name }}</h4>
+                    <br>
+                    <h6 class="card-title">{{file.name}}</h6>
                     <div id="all-btn">
                         <a id="delete-btn" href="{{ url_for('deleteKeywords', id = file.id) }}"
                             class="btn btn-danger">Delete</a>

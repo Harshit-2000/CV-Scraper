@@ -87,3 +87,9 @@ a{
 .margin-5{
     margin: 2% 0;
 }
+
+#current{
+    border: 3px black solid;
+    padding: 5px;
+    border-radius: 5px;
+}

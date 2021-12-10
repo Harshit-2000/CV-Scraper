@@ -20,11 +20,21 @@ db = SQLAlchemy(app)
 ## MODELS ##
 
 
-class KeywordFile(db.Model):
+class Keyword(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
+    file = db.relationship(
+        "KeywordFile", backref=db.backref('keyword', uselist=False), lazy='dynamic')
+    is_active = db.Column(db.Boolean, default=False, nullable=False)
+
+
+class KeywordFile(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
     primaryfile = db.Column(db.LargeBinary(), nullable=False)
     secondaryfile = db.Column(db.LargeBinary())
+
+    keyword_id = db.Column(db.Integer, db.ForeignKey('keyword.id'))
 
     def __repr__(self) -> str:
         return self.name
@@ -63,8 +73,10 @@ def upload():
     except Exception as e:
         print(e)
 
+    is_active = Keyword.query.filter_by(is_active=True).first()
+
     # return jsonify(data)
-    return render_template('home.html', data=data, files=KeywordFile.query.all())
+    return render_template('home.html', data=data, files=KeywordFile.query.all(), set=Keyword.query.all(), is_active=is_active)
 
 
 @app.route('/addname', methods=["POST", "GET"])
@@ -100,6 +112,8 @@ def uploadKeywords():
         try:
             keyword = KeywordFile(
                 name=filename, primaryfile=pFile.read(), secondaryfile=sFile.read())
+            set = Keyword.query.filter_by(is_active=True).first()
+            set.file.append(keyword)
             db.session.add(keyword)
             db.session.commit()
 
@@ -107,8 +121,32 @@ def uploadKeywords():
             print(e)
             return Response(json.dumps({'message': 'Error'}), status=500, mimetype='application/json')
 
-    return render_template('addKeyword.html', files=KeywordFile.query.all())
+    is_active = Keyword.query.filter_by(is_active=True).first()
+    return render_template('addKeyword.html', files=Keyword.query.filter_by(is_active=True).first().file, is_active=is_active)
     # return Response(data, status=200, mimetype='application/json')
+
+
+@app.route('/addSet', methods=["POST", "GET"])
+def addSet():
+    if request.method == 'POST':
+        setname = request.form.get('setname')
+        current = request.form.get('getname')
+        if setname:
+            set = Keyword(name=setname)
+            db.session.add(set)
+            db.session.commit()
+        else:
+            trues = Keyword.query.filter_by(is_active=True).all()
+            for t in trues:
+                t.is_active = False
+
+            current = Keyword.query.filter_by(name=current).first()
+            current.is_active = True
+            db.session.commit()
+
+    is_active = Keyword.query.filter_by(is_active=True).first()
+
+    return render_template('addSet.html', set=Keyword.query.all(), is_active=is_active)
 
 
 @app.route('/deleteKeywords/<int:id>')

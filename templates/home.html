@@ -6,8 +6,16 @@
     <div class="page-container">
         <div class="content-wrap">
             <nav class="navbar">
-                <h1>Home</h1>
+                <a href="{{ url_for('upload') }}">
+                    <h1>Home</h1>
+                </a>
                 <ul class='nav'>
+                    <li class="nav-item">
+                        <h4 id="current">Currently using : {{ is_active.name }}</h4>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-primary" href="{{ url_for('addSet') }}">Add/Select Profiles</a>
+                    </li>
                     <li class="nav-item">
                         <a class="btn btn-danger" href="{{ url_for('clearCSV') }}" data-bs-toggle="tooltip"
                             data-bs-placement="left" title="Clears current CSV files">Clear Session</a>
@@ -65,10 +73,10 @@
                                 <th scope="col">Original Text</th>
                                 <th scope="col">Cleaned Text</th>
 
-                                {% for file in files %}
+                                <!-- {% for file in set %}
                                 <th scope="col">{{ file.name }} percentage</th>
                                 <th scope="col">{{ file.name }} score</th>
-                                {% endfor %}
+                                {% endfor %} -->
                             </tr>
                         </thead>
 
@@ -105,10 +113,10 @@
                                     {{f.cleaned_text|truncate(100)}}
                                 </td>
 
-                                {% for file in files %}
+                                <!-- {% for file in files %}
                                 <td scope="row">{{f['percentageCleaned' + file.name]}}%</td>
                                 <td scope="row">{{f['score' + file.name]}}</td>
-                                {% endfor %}
+                                {% endfor %} -->
 
                             </tr>
                             {% endfor %}
